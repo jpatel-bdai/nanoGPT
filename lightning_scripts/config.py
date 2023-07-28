@@ -17,11 +17,11 @@ LR_DECAY_ITERS = 600000  # should be ~= max_iters per Chinchilla
 MIN_LR = 6e-5  # minimum learning rate, should be ~= learning_rate/10 per Chinchilla
 
 # Model parameters
-BATCH_SIZE = 12  # if gradient_accumulation_steps > 1, this is the micro-batch size
+BATCH_SIZE = 8  # if gradient_accumulation_steps > 1, this is the micro-batch size
 BLOCK_SIZE = 1024
-N_LAYER = 12
-N_HEAD = 12
-N_EMBD = 768
+N_LAYER = 36
+N_HEAD = 20
+N_EMBD = 1280
 DROPOUT = 0.0  # for pretraining 0 is good, for finetuning try 0.1+
 
 # Checkpointing parameters

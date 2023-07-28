@@ -8,12 +8,12 @@ from lightning_scripts import config
 from functools import partial
 
 
-from lightning.pytorch.strategies import FSDPStrategy, XLAStrategy
+from lightning.pytorch.strategies import FSDPStrategy, XLAStrategy, DeepSpeedStrategy
 from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
 from lightning.pytorch import Trainer
 from lightning.pytorch.loggers import TensorBoardLogger
 
-logger = TensorBoardLogger("lightning_gpt_logs", name="gpt-124m")
+logger = TensorBoardLogger("lightning_gpt_logs", name="gpt-2large_fsdp")
 
 torch.backends.cuda.matmul.allow_tf32 = True  # allow tf32 on matmul
 torch.backends.cudnn.allow_tf32 = True  # allow tf32 on cudnn
@@ -44,12 +44,14 @@ if __name__ == "__main__":
         lr_params=(config.WARMUP_ITERS, config.LR_DECAY_ITERS, config.MIN_LR),
     )
 
+    fsdp = FSDPStrategy(cpu_offload=True, mixed_precision=True)
+    # deepspeed = DeepSpeedStrategy(zero_optimization=True, stage=2)
     # Trainer
     trainer = L.Trainer(
         accelerator=config.ACCELERATOR,
         devices=config.DEVICES,
         max_epochs=1,
-        strategy="ddp",
+        strategy=fsdp,
         logger=logger,
         # precision=config.PRECISION,
         # This parameter does not make sense here as num_epochs is 0
@@ -59,7 +61,7 @@ if __name__ == "__main__":
 
     torch.backends.cuda.matmul.allow_tf32 = True  # allow tf32 on matmul
     torch.backends.cudnn.allow_tf32 = True  # allow tf32 on cudnn
-    
+
     # Master process
     if trainer.is_global_zero:
         os.makedirs(config.OUT_DIR, exist_ok=True)
